@@ -1,109 +1,709 @@
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Scanner;
 
-class Student {
-    int roll, marks;
-    String name;
+public class ExamResultManagementSystem {
 
-    // Constructor to initialize student details
-    Student(int roll, String name, int marks) {
-        this.roll = roll;
-        this.name = name;
-        this.marks = marks;
-    }
+    private static final int SUBJECT_COUNT = 5;
+    private static final double PASS_MARK = 35.0;
 
-    // Method to display student details
-    void display() {
-        System.out.println(roll + "\t" + name + "\t" + marks);
-    }
-}
+    private static final String[] SUBJECT_NAMES = {
+        "Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5"
+    };
 
-public class ExamResult {
-    public static void main(String[] args) {
+    private final ArrayList<Student> students = new ArrayList<>();
+    private final Scanner scanner = new Scanner(System.in);
 
-        // Create an ArrayList to store student objects
-        ArrayList<Student> list = new ArrayList<>();
+    private static class Student {
+        private int rollNo;
+        private String name;
+        private final double[] marks;
 
-        Scanner sc = new Scanner(System.in);
-
-        // Add student records
-        list.add(new Student(1, "Rahul", 85));
-        list.add(new Student(2, "Priya", 90));
-        list.add(new Student(3, "Amit", 70));
-
-        // Display menu options
-        System.out.println("1. Display Students");
-        System.out.println("2. Search Student");
-        System.out.println("3. Sort by Marks");
-
-        System.out.print("Enter Choice: ");
-        int ch = sc.nextInt();
-
-        // Perform operation based on user choice
-        switch (ch) {
-
-            // Case 1: Display all students
-            case 1:
-                System.out.println("Roll\tName\tMarks");
-
-                for (Student s : list) {
-                    s.display();
-                }
-                break;
-
-            // Case 2: Search student using roll number
-            case 2:
-                System.out.print("Enter Roll Number: ");
-                int r = sc.nextInt();
-
-                boolean found = false;
-
-                for (Student s : list) {
-                    if (s.roll == r) {
-                        System.out.println("Roll\tName\tMarks");
-                        s.display();
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    System.out.println("Student Not Found");
-                }
-                break;
-
-            // Case 3: Sort students by marks using Bubble Sort
-            case 3:
-
-                for (int i = 0; i < list.size(); i++) {
-                    for (int j = 0; j < list.size() - 1 - i; j++) {
-
-                        // Compare adjacent students' marks
-                        if (list.get(j).marks < list.get(j + 1).marks) {
-
-                            // Swap student objects
-                            Student temp = list.get(j);
-                            list.set(j, list.get(j + 1));
-                            list.set(j + 1, temp);
-                        }
-                    }
-                }
-
-                // Display sorted result
-                System.out.println("Sorted Result (Highest to Lowest):");
-                System.out.println("Roll\tName\tMarks");
-
-                for (Student s : list) {
-                    s.display();
-                }
-                break;
-
-            // Default case for invalid choice
-            default:
-                System.out.println("Invalid Choice");
+        Student(int rollNo, String name, double[] marks) {
+            this.rollNo = rollNo;
+            this.name = name;
+            this.marks = marks.clone();
         }
 
-        // Close Scanner
-        sc.close();
+        int getRollNo() {
+            return rollNo;
+        }
+
+        void setRollNo(int rollNo) {
+            this.rollNo = rollNo;
+        }
+
+        String getName() {
+            return name;
+        }
+
+        void setName(String name) {
+            this.name = name;
+        }
+
+        double[] getMarks() {
+            return marks.clone();
+        }
+
+        void setMarks(double[] newMarks) {
+            if (newMarks == null || newMarks.length != SUBJECT_COUNT) {
+                throw new IllegalArgumentException(
+                    "Exactly " + SUBJECT_COUNT + " subject marks are required."
+                );
+            }
+
+            for (int i = 0; i < SUBJECT_COUNT; i++) {
+                marks[i] = newMarks[i];
+            }
+        }
+
+        double getTotal() {
+            double total = 0;
+
+            for (double mark : marks) {
+                total += mark;
+            }
+
+            return total;
+        }
+
+        double getPercentage() {
+            return getTotal() / SUBJECT_COUNT;
+        }
+
+        boolean isPass() {
+            for (double mark : marks) {
+                if (mark < PASS_MARK) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        String getGrade() {
+            if (!isPass()) return "F";
+
+            double percentage = getPercentage();
+
+            if (percentage >= 90) return "A+";
+            if (percentage >= 80) return "A";
+            if (percentage >= 70) return "B";
+            if (percentage >= 60) return "C";
+            if (percentage >= 50) return "D";
+
+            return "E";
+        }
+    }
+
+    public static void main(String[] args) {
+        new ExamResultManagementSystem().run();
+    }
+
+    private void run() {
+        System.out.println("==============================================");
+        System.out.println("       EXAM RESULT MANAGEMENT SYSTEM");
+        System.out.println("==============================================");
+
+        boolean running = true;
+
+        while (running) {
+            showMenu();
+            int choice = readInt("Enter your choice: ");
+
+            switch (choice) {
+                case 1:
+                    addStudent();
+                    break;
+
+                case 2:
+                    displayAllStudents();
+                    break;
+
+                case 3:
+                    updateStudent();
+                    break;
+
+                case 4:
+                    deleteStudent();
+                    break;
+
+                case 5:
+                    linearSearchByRoll();
+                    break;
+
+                case 6:
+                    binarySearchByRoll();
+                    break;
+
+                case 7:
+                    searchByName();
+                    break;
+
+                case 8:
+                    sortStudents();
+                    break;
+
+                case 9:
+                    showTopper();
+                    break;
+
+                case 10:
+                    showClassStatistics();
+                    break;
+
+                case 11:
+                    showStudentMarksheet();
+                    break;
+
+                case 0:
+                    running = false;
+                    System.out.println("Thank you for using the system.");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice. Please select 0 to 11.");
+            }
+
+            System.out.println();
+        }
+
+        scanner.close();
+    }
+
+    private void showMenu() {
+        System.out.println("----------------------------------------------");
+        System.out.println("1.  Add Student");
+        System.out.println("2.  Display All Students");
+        System.out.println("3.  Update Student");
+        System.out.println("4.  Delete Student");
+        System.out.println("5.  Linear Search (Roll Number)");
+        System.out.println("6.  Binary Search (Roll Number)");
+        System.out.println("7.  Search by Name (Partial Match)");
+        System.out.println("8.  Sort Students");
+        System.out.println("9.  Show Topper");
+        System.out.println("10. Class Statistics");
+        System.out.println("11. View Student Marksheet");
+        System.out.println("0.  Exit");
+        System.out.println("----------------------------------------------");
+    }
+
+    // RECORD MANAGEMENT
+
+    private void addStudent() {
+        System.out.println("\n--- Add Student ---");
+
+        int rollNo = readPositiveInt("Enter roll number: ");
+
+        if (findByRollLinear(rollNo) != null) {
+            System.out.println("A student with this roll number already exists.");
+            return;
+        }
+
+        String name = readNonEmptyName("Enter student name: ");
+        double[] marks = readMarks();
+
+        students.add(new Student(rollNo, name, marks));
+
+        System.out.println("Student added successfully.");
+    }
+
+    private void displayAllStudents() {
+        System.out.println("\n--- All Student Results ---");
+
+        if (students.isEmpty()) {
+            System.out.println("No student records are available.");
+            return;
+        }
+
+        printTableHeader();
+
+        for (Student student : students) {
+            printStudentRow(student);
+        }
+    }
+
+    private void updateStudent() {
+        System.out.println("\n--- Update Student ---");
+
+        int currentRoll = readPositiveInt("Enter the roll number to update: ");
+        Student student = findByRollLinear(currentRoll);
+
+        if (student == null) {
+            System.out.println("Student not found.");
+            return;
+        }
+
+        System.out.println("Current details:");
+        printMarksheet(student);
+
+        int newRoll = readPositiveInt(
+            "Enter new roll number (enter current roll to keep it): "
+        );
+
+        Student duplicate = findByRollLinear(newRoll);
+
+        if (duplicate != null && duplicate != student) {
+            System.out.println("Another student already uses that roll number.");
+            return;
+        }
+
+        String newName = readNonEmptyName("Enter new student name: ");
+
+        System.out.println("Enter the updated marks:");
+
+        double[] newMarks = readMarks();
+
+        student.setRollNo(newRoll);
+        student.setName(newName);
+        student.setMarks(newMarks);
+
+        System.out.println("Student record updated successfully.");
+    }
+
+    private void deleteStudent() {
+        System.out.println("\n--- Delete Student ---");
+
+        int rollNo = readPositiveInt("Enter roll number to delete: ");
+        Student student = findByRollLinear(rollNo);
+
+        if (student == null) {
+            System.out.println("Student not found.");
+            return;
+        }
+
+        printMarksheet(student);
+
+        String confirmation = readLine("Delete this record? (Y/N): ");
+
+        if (confirmation.equalsIgnoreCase("Y")) {
+            students.remove(student);
+            System.out.println("Student record deleted successfully.");
+        } else {
+            System.out.println("Delete operation cancelled.");
+        }
+    }
+
+    // SEARCHING
+
+    private Student findByRollLinear(int rollNo) {
+        for (Student student : students) {
+            if (student.getRollNo() == rollNo) {
+                return student;
+            }
+        }
+
+        return null;
+    }
+
+    private void linearSearchByRoll() {
+        System.out.println("\n--- Linear Search by Roll Number ---");
+
+        int rollNo = readPositiveInt("Enter roll number: ");
+        Student result = findByRollLinear(rollNo);
+
+        if (result == null) {
+            System.out.println("Student not found.");
+        } else {
+            printMarksheet(result);
+        }
+    }
+
+    private void binarySearchByRoll() {
+        System.out.println("\n--- Binary Search by Roll Number ---");
+
+        if (students.isEmpty()) {
+            System.out.println("No student records are available.");
+            return;
+        }
+
+        int rollNo = readPositiveInt("Enter roll number: ");
+
+        ArrayList<Student> sortedCopy = new ArrayList<>(students);
+
+        sortedCopy.sort(Comparator.comparingInt(Student::getRollNo));
+
+        int low = 0;
+        int high = sortedCopy.size() - 1;
+
+        Student result = null;
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+
+            Student middleStudent = sortedCopy.get(mid);
+
+            if (middleStudent.getRollNo() == rollNo) {
+                result = middleStudent;
+                break;
+            } else if (middleStudent.getRollNo() < rollNo) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        if (result == null) {
+            System.out.println("Student not found.");
+        } else {
+            printMarksheet(result);
+        }
+    }
+
+    private void searchByName() {
+        System.out.println("\n--- Search by Name ---");
+
+        String query = readNonEmptyName(
+            "Enter full or partial student name: "
+        ).toLowerCase();
+
+        boolean found = false;
+
+        for (Student student : students) {
+            if (student.getName().toLowerCase().contains(query)) {
+
+                if (!found) {
+                    printTableHeader();
+                }
+
+                printStudentRow(student);
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("No student matched that name.");
+        }
+    }
+
+    // SORTING
+
+    private void sortStudents() {
+        System.out.println("\n--- Sort Students ---");
+
+        if (students.isEmpty()) {
+            System.out.println("No student records are available.");
+            return;
+        }
+
+        System.out.println("1. Roll Number");
+        System.out.println("2. Student Name");
+        System.out.println("3. Percentage");
+
+        int field = readInt("Choose sorting field: ");
+
+        System.out.println("1. Ascending");
+        System.out.println("2. Descending");
+
+        int order = readInt("Choose order: ");
+
+        if (order != 1 && order != 2) {
+            System.out.println("Invalid sorting order.");
+            return;
+        }
+
+        Comparator<Student> comparator;
+
+        switch (field) {
+            case 1:
+                comparator = Comparator.comparingInt(Student::getRollNo);
+                break;
+
+            case 2:
+                comparator = Comparator.comparing(
+                    Student::getName,
+                    String.CASE_INSENSITIVE_ORDER
+                );
+                break;
+
+            case 3:
+                comparator = Comparator.comparingDouble(
+                    Student::getPercentage
+                );
+                break;
+
+            default:
+                System.out.println("Invalid sorting field.");
+                return;
+        }
+
+        if (order == 2) {
+            comparator = comparator.reversed();
+        }
+
+        students.sort(comparator);
+
+        System.out.println("Records sorted successfully.");
+
+        displayAllStudents();
+    }
+
+    // REPORTS
+
+    private void showTopper() {
+        System.out.println("\n--- Class Topper ---");
+
+        if (students.isEmpty()) {
+            System.out.println("No student records are available.");
+            return;
+        }
+
+        Student topper = Collections.max(
+            students,
+            Comparator.comparingDouble(Student::getPercentage)
+        );
+
+        System.out.println("Topper (highest percentage):");
+
+        printMarksheet(topper);
+    }
+
+    private void showClassStatistics() {
+        System.out.println("\n--- Class Statistics ---");
+
+        if (students.isEmpty()) {
+            System.out.println("No student records are available.");
+            return;
+        }
+
+        int passCount = 0;
+        double totalPercentage = 0;
+
+        Student highest = students.get(0);
+        Student lowest = students.get(0);
+
+        for (Student student : students) {
+
+            if (student.isPass()) {
+                passCount++;
+            }
+
+            totalPercentage += student.getPercentage();
+
+            if (student.getPercentage() > highest.getPercentage()) {
+                highest = student;
+            }
+
+            if (student.getPercentage() < lowest.getPercentage()) {
+                lowest = student;
+            }
+        }
+
+        int totalStudents = students.size();
+
+        double average = totalPercentage / totalStudents;
+
+        double passPercentage =
+            (passCount * 100.0) / totalStudents;
+
+        System.out.println("Total students       : " + totalStudents);
+        System.out.println("Students passed      : " + passCount);
+
+        System.out.println(
+            "Students failed      : " + (totalStudents - passCount)
+        );
+
+        System.out.printf(
+            "Pass percentage      : %.2f%%%n",
+            passPercentage
+        );
+
+        System.out.printf(
+            "Class average        : %.2f%%%n",
+            average
+        );
+
+        System.out.printf(
+            "Highest percentage   : %.2f%% (%s, Roll %d)%n",
+            highest.getPercentage(),
+            highest.getName(),
+            highest.getRollNo()
+        );
+
+        System.out.printf(
+            "Lowest percentage    : %.2f%% (%s, Roll %d)%n",
+            lowest.getPercentage(),
+            lowest.getName(),
+            lowest.getRollNo()
+        );
+    }
+
+    private void showStudentMarksheet() {
+        System.out.println("\n--- Student Marksheet ---");
+
+        int rollNo = readPositiveInt("Enter roll number: ");
+
+        Student student = findByRollLinear(rollNo);
+
+        if (student == null) {
+            System.out.println("Student not found.");
+        } else {
+            printMarksheet(student);
+        }
+    }
+
+    // DISPLAY HELPERS
+
+    private void printTableHeader() {
+        System.out.printf("%-8s %-22s", "Roll No", "Name");
+
+        for (int i = 0; i < SUBJECT_COUNT; i++) {
+            System.out.printf(" %8s", "S" + (i + 1));
+        }
+
+        System.out.printf(
+            " %9s %11s %-6s %-8s%n",
+            "Total",
+            "Percentage",
+            "Grade",
+            "Result"
+        );
+
+        System.out.println(
+            "-----------------------------------------------------------------------------------------------"
+        );
+    }
+
+    private void printStudentRow(Student student) {
+        System.out.printf(
+            "%-8d %-22s",
+            student.getRollNo(),
+            student.getName()
+        );
+
+        double[] marks = student.getMarks();
+
+        for (double mark : marks) {
+            System.out.printf(" %8.2f", mark);
+        }
+
+        System.out.printf(
+            " %9.2f %10.2f%% %-6s %-8s%n",
+            student.getTotal(),
+            student.getPercentage(),
+            student.getGrade(),
+            student.isPass() ? "PASS" : "FAIL"
+        );
+    }
+
+    private void printMarksheet(Student student) {
+        System.out.println("----------------------------------------------");
+        System.out.println("                 MARKSHEET");
+        System.out.println("----------------------------------------------");
+
+        System.out.println("Roll Number : " + student.getRollNo());
+        System.out.println("Name        : " + student.getName());
+
+        double[] marks = student.getMarks();
+
+        for (int i = 0; i < SUBJECT_COUNT; i++) {
+            System.out.printf(
+                "%-12s: %.2f / 100%n",
+                SUBJECT_NAMES[i],
+                marks[i]
+            );
+        }
+
+        System.out.println("----------------------------------------------");
+
+        System.out.printf(
+            "Total       : %.2f / 500%n",
+            student.getTotal()
+        );
+
+        System.out.printf(
+            "Percentage  : %.2f%%%n",
+            student.getPercentage()
+        );
+
+        System.out.println("Grade       : " + student.getGrade());
+
+        System.out.println(
+            "Result      : " + (student.isPass() ? "PASS" : "FAIL")
+        );
+
+        System.out.println("----------------------------------------------");
+    }
+
+    // INPUT VALIDATION
+
+    private String readLine(String prompt) {
+        System.out.print(prompt);
+        return scanner.nextLine().trim();
+    }
+
+    private int readInt(String prompt) {
+        while (true) {
+            String input = readLine(prompt);
+
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException exception) {
+                System.out.println(
+                    "Invalid input. Please enter a whole number."
+                );
+            }
+        }
+    }
+
+    private int readPositiveInt(String prompt) {
+        while (true) {
+            int value = readInt(prompt);
+
+            if (value > 0) {
+                return value;
+            }
+
+            System.out.println("Value must be greater than zero.");
+        }
+    }
+
+    private String readNonEmptyName(String prompt) {
+        while (true) {
+            String name = readLine(prompt);
+
+            if (!name.isEmpty()) {
+                return name;
+            }
+
+            System.out.println(
+                "Name cannot be empty. Please try again."
+            );
+        }
+    }
+
+    private double[] readMarks() {
+        double[] marks = new double[SUBJECT_COUNT];
+
+        for (int i = 0; i < SUBJECT_COUNT; i++) {
+            while (true) {
+
+                String input = readLine(
+                    "Enter marks for " + SUBJECT_NAMES[i] + " (0-100): "
+                );
+
+                try {
+                    double mark = Double.parseDouble(input);
+
+                    if (Double.isFinite(mark) && mark >= 0 && mark <= 100) {
+                        marks[i] = mark;
+                        break;
+                    }
+
+                    System.out.println(
+                        "Marks must be between 0 and 100."
+                    );
+
+                } catch (NumberFormatException exception) {
+                    System.out.println(
+                        "Invalid marks. Please enter a numeric value."
+                    );
+                }
+            }
+        }
+
+        return marks;
     }
 }
