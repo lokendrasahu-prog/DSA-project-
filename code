@@ -1,0 +1,109 @@
+
+import java.util.*;
+
+class Student {
+    int roll, marks;
+    String name;
+
+    // Constructor to initialize student details
+    Student(int roll, String name, int marks) {
+        this.roll = roll;
+        this.name = name;
+        this.marks = marks;
+    }
+
+    // Method to display student details
+    void display() {
+        System.out.println(roll + "\t" + name + "\t" + marks);
+    }
+}
+
+public class ExamResult {
+    public static void main(String[] args) {
+
+        // Create an ArrayList to store student objects
+        ArrayList<Student> list = new ArrayList<>();
+
+        Scanner sc = new Scanner(System.in);
+
+        // Add student records
+        list.add(new Student(1, "Rahul", 85));
+        list.add(new Student(2, "Priya", 90));
+        list.add(new Student(3, "Amit", 70));
+
+        // Display menu options
+        System.out.println("1. Display Students");
+        System.out.println("2. Search Student");
+        System.out.println("3. Sort by Marks");
+
+        System.out.print("Enter Choice: ");
+        int ch = sc.nextInt();
+
+        // Perform operation based on user choice
+        switch (ch) {
+
+            // Case 1: Display all students
+            case 1:
+                System.out.println("Roll\tName\tMarks");
+
+                for (Student s : list) {
+                    s.display();
+                }
+                break;
+
+            // Case 2: Search student using roll number
+            case 2:
+                System.out.print("Enter Roll Number: ");
+                int r = sc.nextInt();
+
+                boolean found = false;
+
+                for (Student s : list) {
+                    if (s.roll == r) {
+                        System.out.println("Roll\tName\tMarks");
+                        s.display();
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    System.out.println("Student Not Found");
+                }
+                break;
+
+            // Case 3: Sort students by marks using Bubble Sort
+            case 3:
+
+                for (int i = 0; i < list.size(); i++) {
+                    for (int j = 0; j < list.size() - 1 - i; j++) {
+
+                        // Compare adjacent students' marks
+                        if (list.get(j).marks < list.get(j + 1).marks) {
+
+                            // Swap student objects
+                            Student temp = list.get(j);
+                            list.set(j, list.get(j + 1));
+                            list.set(j + 1, temp);
+                        }
+                    }
+                }
+
+                // Display sorted result
+                System.out.println("Sorted Result (Highest to Lowest):");
+                System.out.println("Roll\tName\tMarks");
+
+                for (Student s : list) {
+                    s.display();
+                }
+                break;
+
+            // Default case for invalid choice
+            default:
+                System.out.println("Invalid Choice");
+        }
+
+        // Close Scanner
+        sc.close();
+    }
+}
